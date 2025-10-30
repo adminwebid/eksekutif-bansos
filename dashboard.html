@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Bantuan Sosial Nasional</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c5aa0;
+            --secondary: #4a86e8;
+            --accent: #ff6b6b;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --info: #2196f3;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray: #6c757d;
+            --gradient-primary: linear-gradient(135deg, #2c5aa0 0%, #4a86e8 100%);
+            --gradient-secondary: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+            --gradient-success: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+            --gradient-warning: linear-gradient(135deg, #ff9800 0%, #ffb74d 100%);
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.15);
+            --radius: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: var(--dark);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .dashboard-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 25px;
+            border-radius: var(--radius);
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(30deg);
+        }
+        
+        .header-info {
+            flex: 1;
+            min-width: 300px;
+            z-index: 1;
+        }
+        
+        .dashboard-header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        
+        .dashboard-header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .header-icon {
+            font-size: 40px;
+            margin-right: 15px;
+            opacity: 0.9;
+        }
+        
+        .year-filter {
+            background-color: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 12px 20px;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .year-filter label {
+            color: white;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        
+        .year-filter select {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            background-color: white;
+            font-size: 15px;
+            color: var(--primary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .year-filter select:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+        }
+        
+        .chart-card {
+            background-color: white;
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border-left: 5px solid var(--primary);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+        
+        .chart-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .chart-card:nth-child(2) {
+            border-left-color: var(--success);
+        }
+        
+        .chart-card:nth-child(2)::before {
+            background: var(--gradient-success);
+        }
+        
+        .chart-card:nth-child(3) {
+            border-left-color: var(--warning);
+        }
+        
+        .chart-card:nth-child(3)::before {
+            background: var(--gradient-warning);
+        }
+        
+        .chart-card:nth-child(4) {
+            border-left-color: var(--accent);
+        }
+        
+        .chart-card:nth-child(4)::before {
+            background: var(--gradient-secondary);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .chart-icon {
+            font-size: 20px;
+            color: var(--primary);
+        }
+        
+        .chart-source {
+            font-size: 12px;
+            color: var(--gray);
+            background: #f1f5f9;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        .stakeholder-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 20px;
+        }
+        
+        .stakeholder-tag {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: var(--transition);
+            border: 1px solid #bbdefb;
+        }
+        
+        .stakeholder-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .kpi-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            flex-direction: column;
+        }
+        
+        .kpi-value {
+            font-size: 52px;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .kpi-label {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 16px;
+            color: var(--gray);
+            font-weight: 600;
+        }
+        
+        .map-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 300px;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 2px dashed #cbd5e0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .map-container::before {
+            content: '';
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            top: -75px;
+            right: -75px;
+            opacity: 0.1;
+        }
+        
+        .map-container::after {
+            content: '';
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: var(--gradient-secondary);
+            border-radius: 50%;
+            bottom: -50px;
+            left: -50px;
+            opacity: 0.1;
+        }
+        
+        .map-placeholder {
+            color: var(--gray);
+            font-size: 16px;
+            text-align: center;
+            z-index: 1;
+        }
+        
+        .map-placeholder i {
+            font-size: 40px;
+            margin-bottom: 15px;
+            display: block;
+            color: var(--primary);
+        }
+        
+        .gauge-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+        }
+        
+        .gauge-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--gray);
+            font-size: 14px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+            
+            .year-filter {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .chart-title {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-header">
+        <div class="header-info">
+            <h1><i class="fas fa-hand-holding-heart header-icon"></i>Dashboard Monitoring Bantuan Sosial Nasional</h1>
+            <p>Visualisasi Data Program Bantuan Sosial PKH, BPNT, PBI, BLT, dan Lainnya</p>
+        </div>
+        <div class="year-filter">
+            <label for="yearSelect"><i class="fas fa-calendar-alt"></i> Pilih Tahun:</label>
+            <select id="yearSelect">
+                <option value="2022">2022</option>
+                <option value="2023" selected>2023</option>
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="dashboard-container">
+        <!-- Chart 1: Total Alokasi Anggaran Bansos Nasional -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title">
+                    <i class="fas fa-chart-bar chart-icon"></i>
+                    <span>Total Alokasi Anggaran Bansos Nasional</span>
+                </div>
+                <div class="chart-source">Sumber: DJA Kemenkeu, Direktorat Anggaran</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="budgetAllocationChart"></canvas>
+            </div>
+            <div class="stakeholder-tags">
+                <span class="stakeholder-tag">Kemenkeu</span>
+                <span class="stakeholder-tag">Kemensos</span>
+                <span class="stakeholder-tag">Bappenas</span>
+            </div>
+        </div>
+        
+        <!-- Chart 2: Realisasi Penyaluran Dana per Triwulan (PKH) -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title">
+                    <i class="fas fa-chart-line chart-icon"></i>
+                    <span>Realisasi Penyaluran Dana PKH per Triwulan</span>
+                </div>
+                <div class="chart-source">Sumber: DJPb, Himbara, Kemensos</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="distributionChart"></canvas>
+            </div>
+            <div class="stakeholder-tags">
+                <span class="stakeholder-tag">Kemenkeu</span>
+                <span class="stakeholder-tag">Himbara</span>
+                <span class="stakeholder-tag">Kemensos</span>
+            </div>
+        </div>
+        
+        <!-- Chart 3: Jumlah Keluarga Penerima Manfaat (KPM) Aktif per Provinsi -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title">
+                    <i class="fas fa-map-marked-alt chart-icon"></i>
+                    <span>Jumlah KPM Aktif per Provinsi</span>
+                </div>
+                <div class="chart-source">Sumber: DTSEN (pengganti DTKS), Kemensos</div>
+            </div>
+            <div class="map-container">
+                <div class="map-placeholder">
+                    <i class="fas fa-map"></i>
+                    Peta Tematik Indonesia dengan Heatmap
+                </div>
+            </div>
+            <div class="stakeholder-tags">
+                <span class="stakeholder-tag">Kemensos</span>
+                <span class="stakeholder-tag">Dinsos Prov/Kab</span>
+            </div>
+        </div>
+        
+        <!-- Chart 4: Sebaran KPM per Kategori -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title">
+                    <i class="fas fa-chart-pie chart-icon"></i>
+                    <span>Sebaran KPM per Kategori</span>
+                </div>
+                <div class="chart-source">Sumber: SIKS-NG Kemensos</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="categoryDistributionChart"></canvas>
+            </div>
+            <div class="stakeholder-tags">
+                <span class="stakeholder-tag">Kemensos</span>
+                <span class="stakeholder-tag">Dinsos</span>
+            </div>
+        </div>
+        
+        <!-- Chart 5: Dana Disalurkan oleh Himbara -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title">
+                    <i class="fas fa-university chart-icon"></i>
+                    <span>Dana Disalurkan oleh Himbara</span>
+                </div>
+                <div class="chart-source">Sumber: Himbara, DJPb</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="himbaraDistributionChart"></canvas>
+            </div>
+            <div class="stakeholder-tags">
+                <span class="stakeholder-tag">Kemenkeu</span>
+                <span class="stakeholder-tag">Himbara</span>
+            </div>
+        </div>
+        
+        <!-- Chart 6: Efektivitas Penyaluran (Realisasi vs Target Dana) -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title">
+                    <i class="fas fa-bullseye chart-icon"></i>
+                    <span>Efektivitas Penyaluran</span>
+                </div>
+                <div class="chart-source">Sumber: DJPb, DJA, Kemensos</div>
+            </div>
+            <div class="kpi-container">
+                <div>
+                    <div class="kpi-value" id="effectivenessValue">87%</div>
+                    <div class="kpi-label">Realisasi vs Target</div>
+                </div>
+            </div>
+            <div class="stakeholder-tags">
+                <span class="stakeholder-tag">Kemenkeu</span>
+                <span class="stakeholder-tag">Bappenas</span>
+            </div>
+        </div>
+        
+        <!-- Chart 7: Distribusi Dana Bansos Berdasarkan Saluran -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title">
+                    <i class="fas fa-money-bill-wave chart-icon"></i>
+                    <span>Distribusi Dana Bansos Berdasarkan Saluran</span>
+                </div>
+                <div class="chart-source">Sumber: Himbara, Kemensos</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="channelDistributionChart"></canvas>
+            </div>
+            <div class="stakeholder-tags">
+                <span class="stakeholder-tag">Kemenkeu</span>
+                <span class="stakeholder-tag">Himbara</span>
+            </div>
+        </div>
+        
+        <!-- Chart 8: Feedback & Kapuasan KPM -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title">
+                    <i class="fas fa-smile-beam chart-icon"></i>
+                    <span>Feedback & Kapuasan KPM</span>
+                </div>
+                <div class="chart-source">Sumber: Survei Kemensos, LAPORI, SPAN</div>
+            </div>
+            <div class="gauge-container">
+                <canvas id="satisfactionGauge"></canvas>
+                <div class="gauge-value" id="satisfactionValue">82%</div>
+            </div>
+            <div class="stakeholder-tags">
+                <span class="stakeholder-tag">Kemenkeu</span>
+                <span class="stakeholder-tag">Kemensos</span>
+                <span class="stakeholder-tag">KSP</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Dashboard Bantuan Sosial Nasional &copy; 2023 - Sistem Informasi Kementerian Sosial</p>
+    </div>
+
+    <script>
+        // Data untuk visualisasi berdasarkan tahun
+        const dataByYear = {
+            '2022': {
+                budgetData: {
+                    labels: ['PKH', 'BPNT', 'PBI', 'BLT', 'Bantuan Lainnya'],
+                    datasets: [{
+                        label: '2022',
+                        data: [40, 28, 25, 18, 12],
+                        backgroundColor: [
+                            'rgba(44, 90, 160, 0.8)',
+                            'rgba(74, 134, 232, 0.8)',
+                            'rgba(102, 187, 106, 0.8)',
+                            'rgba(255, 152, 0, 0.8)',
+                            'rgba(255, 107, 107, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(44, 90, 160, 1)',
+                            'rgba(74, 134, 232, 1)',
+                            'rgba(102, 187, 106, 1)',
+                            'rgba(255, 152, 0, 1)',
+                            'rgba(255, 107, 107, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                distributionData: {
+                    labels: ['TW1', 'TW2', 'TW3', 'TW4'],
+                    datasets: [{
+                        label: 'Target',
+                        data: [25, 50, 75, 100],
+                        borderColor: 'rgba(44, 90, 160, 1)',
+                        backgroundColor: 'rgba(44, 90, 160, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Realisasi',
+                        data: [20, 42, 65, 80],
+                        borderColor: 'rgba(102, 187, 106, 1)',
+                        backgroundColor: 'rgba(102, 187, 106, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                categoryData: {
+                    labels: ['Ibu Hamil', 'Lansia', 'Disabilitas', 'Anak Sekolah'],
+                    datasets: [{
+                        data: [12, 32, 18, 38],
+                        backgroundColor: [
+                            'rgba(44, 90, 160, 0.8)',
+                            'rgba(74, 134, 232, 0.8)',
+                            'rgba(255, 107, 107, 0.8)',
+                            'rgba(255, 152, 0, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(44, 90, 160, 1)',
+                            'rgba(74, 134, 232, 1)',
+                            'rgba(255, 107, 107, 1)',
+                            'rgba(255, 152, 0, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                himbaraData: {
+                    labels: ['BRI', 'BNI', 'Mandiri', 'BTN'],
+                    datasets: [{
+                        label: 'TW1 2022',
+                        data: [10, 7, 8, 4],
+                        backgroundColor: 'rgba(44, 90, 160, 0.8)',
+                        borderColor: 'rgba(44, 90, 160, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'TW2 2022',
+                        data: [12, 8, 9, 5],
+                        backgroundColor: 'rgba(74, 134, 232, 0.8)',
+                        borderColor: 'rgba(74, 134, 232, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                channelData: {
+                    labels: ['Tunai', 'Non-Tunai'],
+                    datasets: [{
+                        data: [70, 30],
+                        backgroundColor: [
+                            'rgba(44, 90, 160, 0.8)',
+                            'rgba(74, 134, 232, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(44, 90, 160, 1)',
+                            'rgba(74, 134, 232, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                effectiveness: '80%',
+                satisfaction: '78%'
+            },
+            '2023': {
+                budgetData: {
+                    labels: ['PKH', 'BPNT', 'PBI', 'BLT', 'Bantuan Lainnya'],
+                    datasets: [{
+                        label: '2023',
+                        data: [45, 32, 28, 20, 15],
+                        backgroundColor: [
+                            'rgba(44, 90, 160, 0.8)',
+                            'rgba(74, 134, 232, 0.8)',
+                            'rgba(102, 187, 106, 0.8)',
+                            'rgba(255, 152, 0, 0.8)',
+                            'rgba(255, 107, 107, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(44, 90, 160, 1)',
+                            'rgba(74, 134, 232, 1)',
+                            'rgba(102, 187, 106, 1)',
+                            'rgba(255, 152, 0, 1)',
+                            'rgba(255, 107, 107, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                distributionData: {
+                    labels: ['TW1', 'TW2', 'TW3', 'TW4'],
+                    datasets: [{
+                        label: 'Target',
+                        data: [25, 50, 75, 100],
+                        borderColor: 'rgba(44, 90, 160, 1)',
+                        backgroundColor: 'rgba(44, 90, 160, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Realisasi',
+                        data: [22, 45, 70, 87],
+                        borderColor: 'rgba(102, 187, 106, 1)',
+                        backgroundColor: 'rgba(102, 187, 106, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                categoryData: {
+                    labels: ['Ibu Hamil', 'Lansia', 'Disabilitas', 'Anak Sekolah'],
+                    datasets: [{
+                        data: [15, 35, 20, 30],
+                        backgroundColor: [
+                            'rgba(44, 90, 160, 0.8)',
+                            'rgba(74, 134, 232, 0.8)',
+                            'rgba(255, 107, 107, 0.8)',
+                            'rgba(255, 152, 0, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(44, 90, 160, 1)',
+                            'rgba(74, 134, 232, 1)',
+                            'rgba(255, 107, 107, 1)',
+                            'rgba(255, 152, 0, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                himbaraData: {
+                    labels: ['BRI', 'BNI', 'Mandiri', 'BTN'],
+                    datasets: [{
+                        label: 'TW1 2023',
+                        data: [12, 8, 10, 5],
+                        backgroundColor: 'rgba(44, 90, 160, 0.8)',
+                        borderColor: 'rgba(44, 90, 160, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'TW2 2023',
+                        data: [15, 9, 12, 6],
+                        backgroundColor: 'rgba(74, 134, 232, 0.8)',
+                        borderColor: 'rgba(74, 134, 232, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                channelData: {
+                    labels: ['Tunai', 'Non-Tunai'],
+                    datasets: [{
+                        data: [65, 35],
+                        backgroundColor: [
+                            'rgba(44, 90, 160, 0.8)',
+                            'rgba(74, 134, 232, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(44, 90, 160, 1)',
+                            'rgba(74, 134, 232, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                effectiveness: '87%',
+                satisfaction: '82%'
+            },
+            '2024': {
+                budgetData: {
+                    labels: ['PKH', 'BPNT', 'PBI', 'BLT', 'Bantuan Lainnya'],
+                    datasets: [{
+                        label: '2024',
+                        data: [48, 35, 30, 22, 18],
+                        backgroundColor: [
+                            'rgba(44, 90, 160, 0.8)',
+                            'rgba(74, 134, 232, 0.8)',
+                            'rgba(102, 187, 106, 0.8)',
+                            'rgba(255, 152, 0, 0.8)',
+                            'rgba(255, 107, 107, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(44, 90, 160, 1)',
+                            'rgba(74, 134, 232, 1)',
+                            'rgba(102, 187, 106, 1)',
+                            'rgba(255, 152, 0, 1)',
+                            'rgba(255, 107, 107, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                distributionData: {
+                    labels: ['TW1', 'TW2', 'TW3', 'TW4'],
+                    datasets: [{
+                        label: 'Target',
+                        data: [25, 50, 75, 100],
+                        borderColor: 'rgba(44, 90, 160, 1)',
+                        backgroundColor: 'rgba(44, 90, 160, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Realisasi',
+                        data: [24, 48, 72, 92],
+                        borderColor: 'rgba(102, 187, 106, 1)',
+                        backgroundColor: 'rgba(102, 187, 106, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                categoryData: {
+                    labels: ['Ibu Hamil', 'Lansia', 'Disabilitas', 'Anak Sekolah'],
+                    datasets: [{
+                        data: [18, 38, 22, 32],
+                        backgroundColor: [
+                            'rgba(44, 90, 160, 0.8)',
+                            'rgba(74, 134, 232, 0.8)',
+                            'rgba(255, 107, 107, 0.8)',
+                            'rgba(255, 152, 0, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(44, 90, 160, 1)',
+                            'rgba(74, 134, 232, 1)',
+                            'rgba(255, 107, 107, 1)',
+                            'rgba(255, 152, 0, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                himbaraData: {
+                    labels: ['BRI', 'BNI', 'Mandiri', 'BTN'],
+                    datasets: [{
+                        label: 'TW1 2024',
+                        data: [14, 9, 11, 6],
+                        backgroundColor: 'rgba(44, 90, 160, 0.8)',
+                        borderColor: 'rgba(44, 90, 160, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'TW2 2024',
+                        data: [16, 10, 13, 7],
+                        backgroundColor: 'rgba(74, 134, 232, 0.8)',
+                        borderColor: 'rgba(74, 134, 232, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                channelData: {
+                    labels: ['Tunai', 'Non-Tunai'],
+                    datasets: [{
+                        data: [60, 40],
+                        backgroundColor: [
+                            'rgba(44, 90, 160, 0.8)',
+                            'rgba(74, 134, 232, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(44, 90, 160, 1)',
+                            'rgba(74, 134, 232, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                effectiveness: '92%',
+                satisfaction: '85%'
+            },
+            '2025': {
+                budgetData: {
+                    labels: ['PKH', 'BPNT', 'PBI', 'BLT', 'Bantuan Lainnya'],
+                    datasets: [{
+                        label: '2025',
+                        data: [52, 38, 32, 25, 20],
+                        backgroundColor: [
+                            'rgba(44, 90, 160, 0.8)',
+                            'rgba(74, 134, 232, 0.8)',
+                            'rgba(102, 187, 106, 0.8)',
+                            'rgba(255, 152, 0, 0.8)',
+                            'rgba(255, 107, 107, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(44, 90, 160, 1)',
+                            'rgba(74, 134, 232, 1)',
+                            'rgba(102, 187, 106, 1)',
+                            'rgba(255, 152, 0, 1)',
+                            'rgba(255, 107, 107, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                distributionData: {
+                    labels: ['TW1', 'TW2', 'TW3', 'TW4'],
+                    datasets: [{
+                        label: 'Target',
+                        data: [25, 50, 75, 100],
+                        borderColor: 'rgba(44, 90, 160, 1)',
+                        backgroundColor: 'rgba(44, 90, 160, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Realisasi',
+                        data: [25, 50, 75, 95],
+                        borderColor: 'rgba(102, 187, 106, 1)',
+                        backgroundColor: 'rgba(102, 187, 106, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                categoryData: {
+                    labels: ['Ibu Hamil', 'Lansia', 'Disabilitas', 'Anak Sekolah'],
+                    datasets: [{
+                        data: [20, 40, 25, 35],
+                        backgroundColor: [
+                            'rgba(44, 90, 160, 0.8)',
+                            'rgba(74, 134, 232, 0.8)',
+                            'rgba(255, 107, 107, 0.8)',
+                            'rgba(255, 152, 0, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(44, 90, 160, 1)',
+                            'rgba(74, 134, 232, 1)',
+                            'rgba(255, 107, 107, 1)',
+                            'rgba(255, 152, 0, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                himbaraData: {
+                    labels: ['BRI', 'BNI', 'Mandiri', 'BTN'],
+                    datasets: [{
+                        label: 'TW1 2025',
+                        data: [15, 10, 12, 7],
+                        backgroundColor: 'rgba(44, 90, 160, 0.8)',
+                        borderColor: 'rgba(44, 90, 160, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'TW2 2025',
+                        data: [18, 12, 15, 8],
+                        backgroundColor: 'rgba(74, 134, 232, 0.8)',
+                        borderColor: 'rgba(74, 134, 232, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                channelData: {
+                    labels: ['Tunai', 'Non-Tunai'],
+                    datasets: [{
+                        data: [55, 45],
+                        backgroundColor: [
+                            'rgba(44, 90, 160, 0.8)',
+                            'rgba(74, 134, 232, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(44, 90, 160, 1)',
+                            'rgba(74, 134, 232, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                effectiveness: '95%',
+                satisfaction: '88%'
+            }
+        };
+
+        // Variabel untuk menyimpan instance chart
+        let budgetChart, distributionChart, categoryChart, himbaraChart, channelChart, satisfactionGauge;
+
+        // Fungsi untuk memperbarui semua chart berdasarkan tahun yang dipilih
+        function updateCharts(year) {
+            const data = dataByYear[year];
+            
+            // Update Chart 1: Total Alokasi Anggaran Bansos Nasional
+            budgetChart.data = data.budgetData;
+            budgetChart.update();
+            
+            // Update Chart 2: Realisasi Penyaluran Dana per Triwulan (PKH)
+            distributionChart.data = data.distributionData;
+            distributionChart.update();
+            
+            // Update Chart 4: Sebaran KPM per Kategori
+            categoryChart.data = data.categoryData;
+            categoryChart.update();
+            
+            // Update Chart 5: Dana Disalurkan oleh Himbara
+            himbaraChart.data = data.himbaraData;
+            himbaraChart.update();
+            
+            // Update Chart 6: Efektivitas Penyaluran
+            document.getElementById('effectivenessValue').textContent = data.effectiveness;
+            
+            // Update Chart 7: Distribusi Dana Bansos Berdasarkan Saluran
+            channelChart.data = data.channelData;
+            channelChart.update();
+            
+            // Update Chart 8: Feedback & Kapuasan KPM
+            document.getElementById('satisfactionValue').textContent = data.satisfaction;
+            satisfactionGauge.data = {
+                datasets: [{
+                    data: [parseInt(data.satisfaction), 100 - parseInt(data.satisfaction)],
+                    backgroundColor: [
+                        'rgba(44, 90, 160, 0.8)',
+                        'rgba(200, 200, 200, 0.3)'
+                    ],
+                    borderWidth: 0,
+                    circumference: 180,
+                    rotation: 270
+                }]
+            };
+            satisfactionGauge.update();
+        }
+
+        // Inisialisasi chart
+        document.addEventListener('DOMContentLoaded', function() {
+            // Chart 1: Total Alokasi Anggaran Bansos Nasional
+            const budgetCtx = document.getElementById('budgetAllocationChart').getContext('2d');
+            budgetChart = new Chart(budgetCtx, {
+                type: 'bar',
+                data: dataByYear['2023'].budgetData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Triliun Rupiah',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Alokasi Anggaran per Program',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: 20
+                        }
+                    }
+                }
+            });
+            
+            // Chart 2: Realisasi Penyaluran Dana per Triwulan (PKH)
+            const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+            distributionChart = new Chart(distributionCtx, {
+                type: 'line',
+                data: dataByYear['2023'].distributionData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Persentase (%)',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Target vs Realisasi Penyaluran PKH',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: 20
+                        }
+                    }
+                }
+            });
+            
+            // Chart 4: Sebaran KPM per Kategori
+            const categoryCtx = document.getElementById('categoryDistributionChart').getContext('2d');
+            categoryChart = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: dataByYear['2023'].categoryData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Persentase KPM per Kategori',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: 20
+                        },
+                        datalabels: {
+                            color: '#fff',
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            },
+                            formatter: (value, ctx) => {
+                                let sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                let percentage = (value * 100 / sum).toFixed(1) + "%";
+                                return percentage;
+                            }
+                        }
+                    }
+                },
+                plugins: [ChartDataLabels]
+            });
+            
+            // Chart 5: Dana Disalurkan oleh Himbara
+            const himbaraCtx = document.getElementById('himbaraDistributionChart').getContext('2d');
+            himbaraChart = new Chart(himbaraCtx, {
+                type: 'bar',
+                data: dataByYear['2023'].himbaraData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Triliun Rupiah',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Dana Disalurkan per Bank',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: 20
+                        }
+                    }
+                }
+            });
+            
+            // Chart 7: Distribusi Dana Bansos Berdasarkan Saluran
+            const channelCtx = document.getElementById('channelDistributionChart').getContext('2d');
+            channelChart = new Chart(channelCtx, {
+                type: 'pie',
+                data: dataByYear['2023'].channelData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Distribusi Saluran Penyaluran',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: 20
+                        },
+                        datalabels: {
+                            color: '#fff',
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            },
+                            formatter: (value, ctx) => {
+                                let sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                let percentage = (value * 100 / sum).toFixed(1) + "%";
+                                return percentage;
+                            }
+                        }
+                    }
+                },
+                plugins: [ChartDataLabels]
+            });
+            
+            // Chart 8: Gauge chart untuk kepuasan KPM
+            const gaugeCtx = document.getElementById('satisfactionGauge').getContext('2d');
+            satisfactionGauge = new Chart(gaugeCtx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [82, 18],
+                        backgroundColor: [
+                            'rgba(44, 90, 160, 0.8)',
+                            'rgba(200, 200, 200, 0.3)'
+                        ],
+                        borderWidth: 0,
+                        circumference: 180,
+                        rotation: 270
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: false
+                        }
+                    }
+                }
+            });
+            
+            // Event listener untuk dropdown tahun
+            document.getElementById('yearSelect').addEventListener('change', function() {
+                updateCharts(this.value);
+            });
+        });
+    </script>
+</body>
+</html>
